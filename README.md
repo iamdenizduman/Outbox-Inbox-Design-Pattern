@@ -69,3 +69,12 @@ Inbox tablosunda bu token varsa, mesaj işleme alınmaz. Bu yöntem sayesinde me
 ## Kaynakça
 
 - Gençay Yıldız - Mikroservis Eğitimleri (YouTube)
+
+---
+
+## Proje
+
+- Order.API servisi, /create-order ile db'ye yeni bir order ekler.
+- Db order eklendikten sonra event fırlatır. OrderCreateEvent türünde.
+- Bu durumda hem db yazma hem event fırlatma iki ayrı olay olduğu için tutarsızlık durumu ele alınmalı.
+- Çözüm olarak order.API servisinde, oluşturulan order'ların publish edilecek halleri OrderOutboxes tablosuna yazılır.
