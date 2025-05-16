@@ -79,3 +79,4 @@ Inbox tablosunda bu token varsa, mesaj işleme alınmaz. Bu yöntem sayesinde me
 - Bu durumda hem db yazma hem event fırlatma iki ayrı olay olduğu için tutarsızlık durumu ele alınmalı.
 - Çözüm olarak order.API servisinde, oluşturulan order'ların publish edilecek halleri OrderOutboxes tablosuna yazılır.
 - Order.Outbox.Table.Publisher.Service worker servis belli aralıklarla çalışarak OrderOutboxes tablosundan veriyi stock servise publish yapar. Daha sonra outbox tablosunda ProccessedDate alanını günceller.
+- Mesajı consume eden Stock.Service, Idempotent kontrolünden (aynı mesaj gitmemesi için) sonra OrderInboxes tablosuna insert atar. Processed 0 olarak insert atar. Sonrasında ise işlemeye başlar. İşlediklerinin processed'ini 1'e çeker.
