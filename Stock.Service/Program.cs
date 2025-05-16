@@ -10,7 +10,7 @@ using Shared;
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddDbContext<StockDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MSSQLServer"))
+    options.UseSqlServer("Server=.;Database=StockDb;Trusted_Connection=True;TrustServerCertificate=True;")
 );
 
 builder.Services.AddMassTransit(config =>
@@ -19,7 +19,7 @@ builder.Services.AddMassTransit(config =>
 
     config.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host(builder.Configuration["RabbitMQ"]);
+        cfg.Host("amqp://guest:guest@localhost:5672/");
 
         cfg.ReceiveEndpoint(RabbitMQSettings.Stock_OrderCreatedEvent, e =>
         {

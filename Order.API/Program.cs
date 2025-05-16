@@ -55,7 +55,8 @@ app.MapPost("/create-order", async (CreateOrderVM model, OrderDbContext orderDbC
             Count = oi.Count,
             ProductId = oi.ProductId,
             Price = oi.Price
-        }).ToList()
+        }).ToList(),
+        IdempotentToken = Guid.NewGuid(),
     };
 
     OrderOutbox orderOutbox = new OrderOutbox()
