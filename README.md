@@ -64,7 +64,20 @@ Mesaj, Outbox tablosunda "gönderildi" olarak güncellenmeden önce alıcıya il
 
 Inbox tablosunda bu token varsa, mesaj işleme alınmaz. Bu yöntem sayesinde mesajların tekrar işlenmesi engellenmiş olur.
 
+Idempotent nasıl sağlanır;
+
+- Unique id vererek.
+- Atomik işlem yaparak, işlemin tüm adımlarının başarılı bir şekilde tamamlanmasını yahut komple işlemin iptal edilmesini sağlayabiliriz. Bu davranışla, işlemlerin tekrar etmesine sebep olan olası durumların yaşanma ihtimalini sıfıra indirgeyebilirz. Örneğin, strong consistency 2Phase Commit kullanarak.
+- İşlem sonuçlarını önbelleğe alarak, aynı işlemin tekrar çağrılması durumunda önceki sonuçları hızlı bir şekilde döndürebilir ya da baz alabiliriz.
+- Zaman damgası (Timestamp): Her işleme/mesaja isteğe zaman damgası ekleyebilir ve böylece belirli bir zaman aralığında aynı işlemin tekrar edilip edilmediğini öğrenebiliriz.
+
+Not: Mikroservis mimarilerde genelde unique id yöntemi kullanılır.
+
 ---
+
+## Özetle
+
+-
 
 ## Kaynakça
 
@@ -77,6 +90,19 @@ Inbox tablosunda bu token varsa, mesaj işleme alınmaz. Bu yöntem sayesinde me
 - Order.API servisi, /create-order ile db'ye yeni bir order ekler.
 - Db order eklendikten sonra event fırlatır. OrderCreateEvent türünde.
 - Bu durumda hem db yazma hem event fırlatma iki ayrı olay olduğu için tutarsızlık durumu ele alınmalı.
-- Çözüm olarak order.API servisinde, oluşturulan order'ların publish edilecek halleri OrderOutboxes tablosuna yazılır.
+- Çözüm olarak order.API servisinde, oluşturulan order'ların publish edilecek halleri OrderOutboxes tablosuna yazılır. (Payload kısmında event sınıfındaki veriler serialize edilir)
 - Order.Outbox.Table.Publisher.Service worker servis belli aralıklarla çalışarak OrderOutboxes tablosundan veriyi stock servise publish yapar. Daha sonra outbox tablosunda ProccessedDate alanını günceller.
 - Mesajı consume eden Stock.Service, Idempotent kontrolünden (aynı mesaj gitmemesi için) sonra OrderInboxes tablosuna insert atar. Processed 0 olarak insert atar. Sonrasında ise işlemeye başlar. İşlediklerinin processed'ini 1'e çeker.
+
+- Configler;
+- RabbitMQ: docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:4.0-management
+
+- Mssql Sorgular
+
+SELECT top 5 FROM OrderDB.dbo.Orders nolock order by 1 desc
+
+SELECT top 5 from OrderDB.dbo.OrderItems nolock order by 1 desc
+
+SELECT top 5 FROM OrderDB.dbo.OrderOutboxes nolock order by 1 desc
+
+SELECT top 5 from StockDb.dbo.OrderInboxes nolock

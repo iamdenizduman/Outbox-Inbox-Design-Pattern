@@ -45,6 +45,8 @@ app.MapPost("/create-order", async (CreateOrderVM model, OrderDbContext orderDbC
     await orderDbContext.Orders.AddAsync(order);
     await orderDbContext.SaveChangesAsync();
 
+    var idempotentToken = Guid.NewGuid();
+
     OrderCreatedEvent @event = new()
     {
         BuyerId = order.BuyerId,
@@ -56,7 +58,7 @@ app.MapPost("/create-order", async (CreateOrderVM model, OrderDbContext orderDbC
             ProductId = oi.ProductId,
             Price = oi.Price
         }).ToList(),
-        IdempotentToken = Guid.NewGuid(),
+        IdempotentToken = idempotentToken,
     };
 
     OrderOutbox orderOutbox = new OrderOutbox()
@@ -64,7 +66,8 @@ app.MapPost("/create-order", async (CreateOrderVM model, OrderDbContext orderDbC
         OccuredOn = DateTime.Now,
         ProcessedDate = null,
         Payload = JsonSerializer.Serialize(@event),
-        Type = @event.GetType().Name
+        Type = @event.GetType().Name,
+        IdempotentToken = idempotentToken
     };
 
     await orderDbContext.AddAsync(orderOutbox);
