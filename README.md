@@ -77,7 +77,9 @@ Not: Mikroservis mimarilerde genelde unique id yöntemi kullanılır.
 
 ## Özetle
 
--
+- Bir servis kendi business'larını yaptıktan sonra fırlatacağı event sınıfını oluşturur. Outbox table'a payload kısmına serialize edilecek şekilde kayıt atar.
+- Outbox publisher'da worker görevi görür belli aralıklarla tablosunda işlenmemiş kayıt var mı kontol eder, gelen kaydı da ilgili servise publish eder.
+- Alıcı servis mesajı yakalayınca inbox tablosuna eğer aynı idempotent token ile gelinmemişse kaydeder. Daha sonrasında ise sırasıyla business'ini koşar.
 
 ## Kaynakça
 
